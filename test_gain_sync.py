@@ -78,7 +78,7 @@ def test_log_change():
     )
     
     # Log the change
-    log_change(audio, -2.0, True, log_file="test_changes.log")
+    log_change(audio, -2.0, log_file="test_changes.log")
     
     # Verify log entry
     assert log_file.exists()
@@ -87,7 +87,7 @@ def test_log_change():
         entry = json.loads(f.readline())
         assert entry["path"] == str(test_file)
         assert entry["adjustment"] == -2.0
-        assert entry["action"] == "normalize"
+        # "action" field removed from log
     
     # Cleanup
     log_file.unlink()

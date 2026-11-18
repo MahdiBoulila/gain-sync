@@ -47,7 +47,7 @@ LOG_FILE = "changes.log"
 
 def find_audio_files(folder: Path) -> List[Path]:
     """Find all audio files in folder."""
-    extensions = {".wav", ".flac", ".aiff"}
+    extensions = {".wav", ".flac", ".aiff", ".mp3"}
     files = []
     for ext in extensions:
         files.extend(folder.glob(f"**/*{ext}"))
@@ -196,7 +196,7 @@ def apply_normalization(audio: AudioFile) -> bool:
         output_path.rename(audio.path)
         
         # Log the change
-        log_change(audio, gain_db, True)
+        log_change(audio, gain_db)
         
         return True
         
@@ -207,7 +207,7 @@ def apply_normalization(audio: AudioFile) -> bool:
 
 def invert_normalization(audio: AudioFile) -> bool:
     """Invert previous normalization using stored log."""
-    if not LOG_FILE or not os.path.exists(LOG_FILE):
+    if not os.path.exists(LOG_FILE):
         print(f"Error: {LOG_FILE} not found for inversion")
         return False
     
@@ -265,10 +265,11 @@ def log_change(audio: AudioFile, gain_db: float, normalize: bool = True, log_fil
         "path": str(audio.path),
         "adjustment": gain_db,
         "timestamp": str(audio.path.stat().st_mtime),
-        "action": "normalize" if normalize else "invert",
         "original_loudness": audio.original_loudness,
         "original_peak": audio.original_peak,
     }
+    
+    # Remove "action" field for cleaner log
     
     with open(log_file, 'a') as f:
         f.write(json.dumps(entry) + '\n')
@@ -278,8 +279,12 @@ def main():
     parser = argparse.ArgumentParser(description='Normalize audio files by EBU R128 loudness')
     parser.add_argument('--folder', '-f', required=True, help='Folder containing audio files')
     parser.add_argument('--invert', action='store_true', help='Invert previous normalizations')
+    parser.add_argument('--log', default='changes.log', help='Log file for changes (default: changes.log)')
     
     args = parser.parse_args()
+    
+    global LOG_FILE
+    LOG_FILE = args.log
     
     folder = Path(args.folder)
     
