@@ -1,0 +1,3 @@
+# Audio normalization tools (install separately)
+# sudo apt-get install ffmpeg bs1770gain
+# pip install pydub (optional for more format support)
