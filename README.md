@@ -13,21 +13,23 @@ sudo apt-get install ffmpeg bs1770gain
 ## Usage
 
 ```bash
+# Normalize audio files in a folder
 python gain_sync.py --folder /path/to/audio/folder
+
+# Invert previous normalizations
+python gain_sync.py --folder /path/to/audio/folder --invert
 ```
 
-## Features
+## Testing
 
-- Scans folder for `.wav`, `.flac`, `.aiff` files
-- Measures EBU R128 loudness with bs1770gain
-- Calculates adjustment gains to match reference (median loudness)
-- Applies normalization using FFmpeg
-- Logs all changes to `changes.log` for inversion
-
-## Inverting Changes
-
-Run with `--invert` to restore original loudness:
+To test with sample files (requires FFmpeg for conversion):
 
 ```bash
-python gain_sync.py --folder /path/to/audio/folder --invert
+cd gain-sync/test_audio
+
+# If you have FFmpeg, convert MP3 to FLAC:
+for f in *.mp3; do ffmpeg -i "$f" "${f%.mp3}.flac"; done
+
+# Run gain sync:
+python ../gain_sync.py --folder .
 ```
