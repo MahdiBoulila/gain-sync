@@ -167,7 +167,7 @@ def calculate_adjustments(files: List[AudioFile]) -> float:
 
 
 def apply_normalization(audio: AudioFile) -> bool:
-    """Apply normalization using FFmpeg."""
+    """Apply normalization using FFmpeg while preserving the original file extension."""
     if audio.adjustment is None:
         print(f"Error: No adjustment for {audio.path}")
         return False
@@ -175,9 +175,9 @@ def apply_normalization(audio: AudioFile) -> bool:
     # Calculate gain multiplier (dB to amplitude)
     gain_db = audio.adjustment
     gain_amp = 10 ** (gain_db / 20)
+    original_ext = audio.path.suffix  # e.g., .mp3, .flac, .aiff
+    output_path = audio.path.with_suffix(original_ext + ".tmp")
     
-    # Build FFmpeg command
-    output_path = audio.path.with_suffix(audio.path.suffix + ".tmp")
     cmd = [
         "ffmpeg", "-y", "-i", str(audio.path),
         "-af", f"volume={gain_amp}dB",
@@ -190,8 +190,8 @@ def apply_normalization(audio: AudioFile) -> bool:
             print(f"FFmpeg error for {audio.path}: {result.stderr}")
             return False
         
-        # Replace original file
-        backup_path = audio.path.with_suffix(audio.path.suffix + ".bak")
+        # Replace original file (preserving extension)
+        backup_path = audio.path.with_suffix(original_ext + ".bak")
         audio.path.rename(backup_path)
         output_path.rename(audio.path)
         
@@ -231,9 +231,10 @@ def invert_normalization(audio: AudioFile) -> bool:
 
 
 def apply_adjustment(audio: AudioFile, gain_db: float) -> bool:
-    """Apply a specific gain adjustment."""
+    """Apply a specific gain adjustment while preserving the original file extension."""
     gain_amp = 10 ** (gain_db / 20)
-    output_path = audio.path.with_suffix(audio.path.suffix + ".tmp")
+    original_ext = audio.path.suffix  # e.g., .mp3, .flac, .aiff
+    output_path = audio.path.with_suffix(original_ext + ".tmp")
     
     cmd = [
         "ffmpeg", "-y", "-i", str(audio.path),
@@ -246,8 +247,8 @@ def apply_adjustment(audio: AudioFile, gain_db: float) -> bool:
         if result.returncode != 0:
             return False
         
-        # Replace original file
-        backup_path = audio.path.with_suffix(audio.path.suffix + ".bak")
+        # Replace original file (preserving extension)
+        backup_path = audio.path.with_suffix(original_ext + ".bak")
         audio.path.rename(backup_path)
         output_path.rename(audio.path)
         
